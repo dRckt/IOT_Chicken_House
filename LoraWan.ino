@@ -1,47 +1,7 @@
-// Librairies
-#include <lmic.h>
-#include <hal/hal.h>
-#include <SPI.h>
 
 
-// This EUI must be in little-endian format, so least-significant-byte
-// first. When copying an EUI from ttnctl output, this means to reverse
-// the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
-// 0x70.
-static const u1_t PROGMEM APPEUI[8] = {0x91, 0xB8, 0x43, 0xD0, 0x7E, 0xD5, 0xB3, 0x70};
-void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
 
-// This should also be in little endian format, see above.
-//static const u1_t PROGMEM DEVEUI[8] = { 0x40, 0xCE, 0xCC, 0xA6, 0x13, 0xB2, 0x18, 0x00 };
-// eui-70b3d57ed004748c 6 channels MAC V1.0.2 REV B
-static const u1_t PROGMEM DEVEUI[8]={0x7C, 0x91, 0x04, 0xD0, 0x7E, 0xD5, 0xB3, 0x70};
-
-void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
-
-// This key should be in big endian format (or, since it is not really a
-// number but a block of memory, endianness does not really apply). In
-// practice, a key taken from the TTN console can be copied as-is.
-static const u1_t PROGMEM APPKEY[16] = { 0x54, 0x6C, 0x4B, 0x03, 0xA2, 0x25, 0x45, 0x9B, 0x25, 0x12, 0xD4, 0xB0, 0x25, 0xD6, 0x34, 0xC1};
-void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
-
-unsigned char loraData[3];
-static osjob_t sendjob;
-
-// Schedule TX every this many seconds (might become longer due to duty
-// cycle limitations).
-const unsigned TX_INTERVAL = 30;
-
-// Pin mapping for Adafruit Feather M0 LoRa
-const lmic_pinmap lmic_pins = {
-    .nss = 8,
-    .rxtx = LMIC_UNUSED_PIN,
-    .rst = 4,
-    .dio = {3, 6, LMIC_UNUSED_PIN},
-    .rxtx_rx_active = 0,
-    .rssi_cal = 8,              // LBT cal for the Adafruit Feather M0 LoRa, in dB
-    .spi_freq = 8000000,
-};
 
 void onEvent (ev_t ev) {
     Serial.print(os_getTime());
@@ -176,11 +136,12 @@ void do_send(osjob_t* j){
       //int16_t tempInt = round(t * 100);
       //int16_t humidInt = round(h * 100);
 
-        Lux = map(event.light, 0, 5000, 0, 100);
-        if (Lux > 100){
-          Lux = 100;
+        //light = map(event.light, 0, 5000, 0, 100);
+        
+        if (light > 100){
+          light = 100;
         }
-        Serial.println(Lux);
+        Serial.println(light);
     
       // encode int as bytes
       //byte payload[2];
