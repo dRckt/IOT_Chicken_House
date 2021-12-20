@@ -1,8 +1,3 @@
-
-
-
-
-
 void onEvent (ev_t ev) {
     Serial.print(os_getTime());
     Serial.print(": ");

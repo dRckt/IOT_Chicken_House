@@ -86,12 +86,16 @@ void Chicken_action(void){
       // Poule Entre
       ChickenNbr += 1;
       Serial.println("One more chicken");
+      os_runloop_once();
     }
      if (Direction > 0){
       // Poule Sort
       ChickenNbr -= 1;
       Serial.println("One less chicken");
+      os_runloop_once();
     }
+    SendData = true;
+    
     Front = false;
     key_Front = false;
     Rear = false;

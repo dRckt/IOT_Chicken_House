@@ -1,4 +1,4 @@
-#define FREQ_ENVOI 2000
+#define FREQ_ENVOI 60000
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
@@ -11,7 +11,7 @@ static const u1_t PROGMEM APPKEY[16] = { 0x54, 0x6C, 0x4B, 0x03, 0xA2, 0x25, 0x4
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 unsigned char loraData[3];
 static osjob_t sendjob;
-const unsigned TX_INTERVAL = 30;
+const unsigned TX_INTERVAL = 30;      // envoi toutes les 30 secondes
 const lmic_pinmap lmic_pins = {
     .nss = 8,
     .rxtx = LMIC_UNUSED_PIN,
@@ -22,13 +22,14 @@ const lmic_pinmap lmic_pins = {
     .spi_freq = 8000000,
 };
 
-bool LoraWanConnected = false;
+bool LoraWanConnected = true;
+bool SendData = false;
 bool DoorState;     // 0 = fermé, 1 = ouvert
 int initialChickenNbr = 10;
 int ChickenNbr;
 uint32_t light;
 
-int t_Time;
+int t0_Time;
 
 void setup() {
   delay(2000);
@@ -37,11 +38,14 @@ void setup() {
   setup_LuxSensor();  
   setup_LoraWan();
 
-  t_Time = millis();
+  t0_Time = millis();
 }
 
 void loop() {
   if (LoraWanConnected){
+
+    os_runloop_once();
+    
     light = getLight();
     Chicken_action();
   
@@ -56,7 +60,7 @@ void loop() {
     }
   
     int current_time = millis();
-    if (current_time >= t_Time + FREQ_ENVOI){
+    if (current_time >= t0_Time + FREQ_ENVOI){
       Serial.print("light        | ");
       Serial.println(light);
       Serial.print("Chicken Nbr  | ");
@@ -64,13 +68,13 @@ void loop() {
       // send LoraWan
       os_runloop_once();
       // reset
-      t_Time = millis();
+      t0_Time = millis();
     }
   }
 }
 
-
+/*
 void SendData(void){
   // send data with LorA
-  
 }
+*/
