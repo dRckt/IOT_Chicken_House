@@ -1,4 +1,7 @@
 #define FREQ_ENVOI 60000
+#define DOOR_LED_OPEN 5
+#define DOOR_LED_CLOSE 9
+
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
@@ -22,7 +25,6 @@ const lmic_pinmap lmic_pins = {
     .spi_freq = 8000000,
 };
 
-bool LoraWanConnected = true;
 bool SendData = false;
 bool DoorState;     // 0 = fermé, 1 = ouvert
 int initialChickenNbr = 10;
@@ -38,43 +40,48 @@ void setup() {
   setup_LuxSensor();  
   setup_LoraWan();
 
+  pinMode(DOOR_LED_OPEN, OUTPUT);
+  pinMode(DOOR_LED_CLOSE, OUTPUT);
+  
+  digitalWrite(DOOR_LED_OPEN, LOW);
+  digitalWrite(DOOR_LED_CLOSE, LOW);
+
+
   t0_Time = millis();
 }
 
 void loop() {
-  if (LoraWanConnected){
 
-    os_runloop_once();
+  os_runloop_once();
+  
+  light = getLight();
+  Chicken_action();
+
+  // nuit en dessous de 50 lux
+  if (light >= 50 && ChickenNbr == initialChickenNbr){
+    // portes fermées
+    DoorState = 0;
+    digitalWrite(DOOR_LED_OPEN, LOW);
+    digitalWrite(DOOR_LED_CLOSE, HIGH);
     
-    light = getLight();
-    Chicken_action();
-  
-    // nuit en dessous de 50 lux
-    if (light >= 50 && ChickenNbr == initialChickenNbr){
-      // portes fermées
-      DoorState = 0;
-    }
-    else {
-      // portes ouvertes
-      DoorState = 1;
-    }
-  
-    int current_time = millis();
-    if (current_time >= t0_Time + FREQ_ENVOI){
-      Serial.print("light        | ");
-      Serial.println(light);
-      Serial.print("Chicken Nbr  | ");
-      Serial.println(ChickenNbr);
-      // send LoraWan
-      os_runloop_once();
-      // reset
-      t0_Time = millis();
-    }
   }
-}
+  else {
+    // portes ouvertes
+    DoorState = 1;
+    digitalWrite(DOOR_LED_OPEN, HIGH);
+    digitalWrite(DOOR_LED_CLOSE, LOW);
+  }
 
-/*
-void SendData(void){
-  // send data with LorA
+  int current_time = millis();
+  if (current_time >= t0_Time + FREQ_ENVOI){
+    Serial.print("light        | ");
+    Serial.println(light);
+    Serial.print("Chicken Nbr  | ");
+    Serial.println(ChickenNbr);
+    // send LoraWan
+    os_runloop_once();
+    // reset
+    t0_Time = millis();
+  }
+  
 }
-*/

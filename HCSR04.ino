@@ -94,7 +94,6 @@ void Chicken_action(void){
       Serial.println("One less chicken");
       os_runloop_once();
     }
-    SendData = true;
     
     Front = false;
     key_Front = false;
